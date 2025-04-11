@@ -67,8 +67,8 @@ def plot_decision_regions(x, y, classifier, test_idx=None, resolution=0.02):
         plt.scatter(x_test[:, 0], x_test[:, 1], c='none', edgecolor='black', alpha=1.0, linewidth=1, marker='o', s=100, label='Test set')
 
         
-# x_combined_std = np.vstack((x_train_std, x_test_std))
-# y_combined = np.hstack((y_train, y_test))
+x_combined_std = np.vstack((x_train_std, x_test_std))
+y_combined = np.hstack((y_train, y_test))
 # plot_decision_regions(x= x_combined_std, y= y_combined, classifier=ppn, test_idx=range(105, 150))
 # plt.xlabel("Petal length")
 # plt.ylabel("Petal width")
@@ -136,7 +136,7 @@ class LogisticRegressionGD:
         rgen = np.random.RandomState(self.random_state)
         self.w_ = rgen.normal(loc=0.0, scale=1.0, size=x.shape[1])
         self.b_ = np.float_(0.)
-        self.losses = []
+        self.losses_ = []
 
         for i in range(self.n_iter):
             net_input = self.net_input(x)
@@ -161,5 +161,35 @@ class LogisticRegressionGD:
 
 
 
-x_train_01_subset = x_train[(y_train == 0) | (y_train == 1)]
-y_train_01_subset = y_train[()]
+x_train_01_subset = x_train_std[(y_train == 0) | (y_train == 1)]
+y_train_01_subset = y_train[(y_train == 0)| (y_train == 1)]
+
+lrgd = LogisticRegressionGD(
+    eta=0.3,
+    n_iter=1000,
+    random_state=1
+)
+
+lrgd.fit(x= x_train_01_subset, y = y_train_01_subset)
+plot_decision_regions(x=x_train_01_subset, y=y_train_01_subset, classifier=lrgd)
+
+plt.xlabel("Petal length (standardized)")
+plt.ylabel("Petal width (standardized)")
+plt.legend(loc='upper left')
+plt.tight_layout()
+plt.show()
+
+# training a logistic regression model with scikit learn
+
+from sklearn.linear_model import LogisticRegression
+lr = LogisticRegression(C=100.0, solver='lbfgs', multi_class='ovr')
+lr.fit(x_train_std, y_train)
+plot_decision_regions(x_combined_std, y_combined, classifier=lr, test_idx=range(105, 150))
+plt.xlabel("Petal length (standardized)")
+plt.ylabel("Petal width (standardized)")
+plt.legend(loc='upper left')
+plt.tight_layout()
+plt.show()
+
+# predict proba method examples
+
