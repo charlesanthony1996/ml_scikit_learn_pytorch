@@ -177,7 +177,7 @@ plt.xlabel("Petal length (standardized)")
 plt.ylabel("Petal width (standardized)")
 plt.legend(loc='upper left')
 plt.tight_layout()
-plt.show()
+# plt.show()
 
 # training a logistic regression model with scikit learn
 
@@ -189,7 +189,40 @@ plt.xlabel("Petal length (standardized)")
 plt.ylabel("Petal width (standardized)")
 plt.legend(loc='upper left')
 plt.tight_layout()
-plt.show()
+# plt.show()
 
 # predict proba method examples
 
+# print(lr.predict_proba(x_test_std[:3, :]))
+# print(lr.predict_proba(x_test_std[:3, :]).argmax(axis=1))
+# print(lr.predict_proba(x_test_std[:3, :]))
+
+# print(lr.predict(x_test_std[0, :].reshape(1, -1)))
+
+weights, params = [], []
+for c in np.arange(-5, 5):
+    lr = LogisticRegression(C=10.**c, multi_class='ovr')
+    lr.fit(x_train_std, y_train)
+    weights.append(lr.coef_[1])
+    params.append(10.**c)
+
+weights = np.array(weights)
+plt.plot(params, weights[:, 0], label='Petal length')
+plt.plot(params, weights[:, 1], linestyle='--', label='Petal width')
+plt.ylabel('Weight coefficient')
+plt.xlabel('C')
+plt.legend(loc='upper left')
+plt.xscale('log')
+plt.show()
+
+# dealing with a non linearly seperable case using slack variables
+
+from sklearn.svm import SVC
+svm = SVC(kernel='linear', C=1.0, random_state=1)
+svm.fit(x_train_std, y_train)
+plot_decision_regions(x_combined_std, y_combined, classifier=svm, test_idx =range(105, 150))
+plt.xlabel('Petal length [standardized]')
+plt.ylabel('Petal width [standardized]')
+plt.legend(loc='upper left')
+plt.tight_layout()
+# plt.show()
