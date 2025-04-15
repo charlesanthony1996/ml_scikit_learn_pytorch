@@ -69,7 +69,7 @@ def plot_decision_regions(x, y, classifier, test_idx=None, resolution=0.02):
         
 x_combined_std = np.vstack((x_train_std, x_test_std))
 y_combined = np.hstack((y_train, y_test))
-# plot_decision_regions(x= x_combined_std, y= y_combined, classifier=ppn, test_idx=range(105, 150))
+plot_decision_regions(x= x_combined_std, y= y_combined, classifier=ppn, test_idx=range(105, 150))
 # plt.xlabel("Petal length")
 # plt.ylabel("Petal width")
 # plt.legend(loc='upper left')
@@ -85,8 +85,8 @@ import numpy as np
 def sigmoid(z):
     return 1.0 / (1.0 + np.exp(-z))
 
-# z = np.arange(-7, 7, 0.1)
-# sigma_z = sigmoid(z)
+z = np.arange(-7, 7, 0.1)
+sigma_z = sigmoid(z)
 # plt.plot(z, sigma_z)
 # plt.axvline(0.0, color='k')
 # plt.ylim(-0.1, 1.1)
@@ -108,11 +108,11 @@ def loss_1(z):
 def loss_0(z):
     return - np.log(1 - sigmoid(z))
 
-# z = np.arange(-10, 10, 0.1)
-# sigma_z = sigmoid(z)
-# c1 = [loss_1(x) for x in z]
+z = np.arange(-10, 10, 0.1)
+sigma_z = sigmoid(z)
+c1 = [loss_1(x) for x in z]
 # plt.plot(sigma_z, c1, label='L(w, b) if y=1')
-# c0 = [loss_0(x) for x in z]
+c0 = [loss_0(x) for x in z]
 # plt.plot(sigma_z, c0, linestyle='--', label='L(w, b) if y=0')
 # plt.ylim(0.0, 5.1)
 # plt.xlim([0, 1])
@@ -171,8 +171,8 @@ lrgd = LogisticRegressionGD(
 )
 
 lrgd.fit(x= x_train_01_subset, y = y_train_01_subset)
+plt.figure()
 plot_decision_regions(x=x_train_01_subset, y=y_train_01_subset, classifier=lrgd)
-
 plt.xlabel("Petal length (standardized)")
 plt.ylabel("Petal width (standardized)")
 plt.legend(loc='upper left')
@@ -184,6 +184,7 @@ plt.tight_layout()
 from sklearn.linear_model import LogisticRegression
 lr = LogisticRegression(C=100.0, solver='lbfgs', multi_class='ovr')
 lr.fit(x_train_std, y_train)
+plt.figure()
 plot_decision_regions(x_combined_std, y_combined, classifier=lr, test_idx=range(105, 150))
 plt.xlabel("Petal length (standardized)")
 plt.ylabel("Petal width (standardized)")
@@ -193,11 +194,10 @@ plt.tight_layout()
 
 # predict proba method examples
 
-# print(lr.predict_proba(x_test_std[:3, :]))
-# print(lr.predict_proba(x_test_std[:3, :]).argmax(axis=1))
-# print(lr.predict_proba(x_test_std[:3, :]))
-
-# print(lr.predict(x_test_std[0, :].reshape(1, -1)))
+print(lr.predict_proba(x_test_std[:3, :]))
+print(lr.predict_proba(x_test_std[:3, :]).argmax(axis=1))
+print(lr.predict_proba(x_test_std[:3, :]))
+print(lr.predict(x_test_std[0, :].reshape(1, -1)))
 
 weights, params = [], []
 for c in np.arange(-5, 5):
@@ -207,22 +207,123 @@ for c in np.arange(-5, 5):
     params.append(10.**c)
 
 weights = np.array(weights)
+plt.figure()
 plt.plot(params, weights[:, 0], label='Petal length')
 plt.plot(params, weights[:, 1], linestyle='--', label='Petal width')
 plt.ylabel('Weight coefficient')
 plt.xlabel('C')
 plt.legend(loc='upper left')
 plt.xscale('log')
-plt.show()
+# plt.show()
 
 # dealing with a non linearly seperable case using slack variables
 
 from sklearn.svm import SVC
 svm = SVC(kernel='linear', C=1.0, random_state=1)
 svm.fit(x_train_std, y_train)
+plt.figure()
 plot_decision_regions(x_combined_std, y_combined, classifier=svm, test_idx =range(105, 150))
 plt.xlabel('Petal length [standardized]')
 plt.ylabel('Petal width [standardized]')
 plt.legend(loc='upper left')
 plt.tight_layout()
 # plt.show()
+
+
+from sklearn.linear_model import SGDClassifier
+ppn = SGDClassifier(loss='perceptron')
+lr = SGDClassifier(loss='lfg')
+svm = SGDClassifier(loss='hinge')
+
+# kernel methods for linearly inseperable data
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+np.random.seed(1)
+x_xor = np.random.randn(200, 2)
+y_xor = np.logical_xor(x_xor[:, 0] > 0, x_xor[:, 1] > 0)
+y_xor = np.where(y_xor, 1, 0)
+plt.figure()
+plt.scatter(x_xor[y_xor == 1, 0], x_xor[y_xor == 1, 1], c='royalblue', marker='s', label='Class 1')
+plt.scatter(x_xor[y_xor == 0, 0], x_xor[y_xor == 0, 1], c='tomato', marker='o', label='Class 0')
+plt.xlim([-3, 3])
+plt.ylim([-3, 3])
+plt.xlabel('Feature 1')
+plt.ylabel('Feature 2')
+plt.legend(loc='best')
+plt.tight_layout()
+# plt.show()
+
+# using the kernel trick to find seperating hyperplanes in a high dimensional space
+
+svm = SVC(kernel='rbf', random_state=1, gamma=0.10, C=10.0)
+svm.fit(x_xor, y_xor)
+plt.figure()
+plot_decision_regions(x_xor, y_xor, classifier=svm)
+plt.legend(loc='upper left')
+plt.tight_layout()
+# plt.show()
+
+
+# decision tree learning
+
+def entropy(p):
+    return - p * np.log2(p) - (1-p) * np.log2((1-p))
+
+x = np.arange(0.0, 1.0, 0.01)
+ent = [entropy(p) if p != 0 else None for p in x]
+# this is important if you dont want the plots to be stacking up
+plt.figure()
+plt.ylabel('Entropy')
+plt.xlabel('Class membership probability p(i)=i')
+plt.plot(x, ent)
+# plt.show()
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+def gini(p):
+    return p*(1-p) + (1-p) * (1- (1-p))
+
+def entropy(p):
+    return - p * np.log2(p) - (1-p)*np.log2((1- p))
+
+def error(p):
+    return 1 - np.max([p, 1- p])
+
+x = np.arange(0.0, 1.0, 0.01)
+ent = [entropy(p) if p != 0 else None for p in x]
+sc_ent = [e*0.5 if e else None for e in ent]
+err = [error(i) for i in x]
+fig = plt.figure()
+ax = plt.subplot(111)
+for i, lab, ls, c, in zip([ent, sc_ent, gini(x), err], ['Entropy', 'Entoropy (scaled)', 'Gini impurity', 'Misclassfication error'], ['-', '-', '--', '-.'], ['black', 'lightgray', 'red', 'green', 'cyan']):
+    line = ax.plot(x, i, label=lab, linestyle=ls, lw=2, color=c)
+
+ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.15), ncol=5, fancybox=True, shadow=False)
+ax.axhline(y=0.5, linewidth=1, color='k', linestyle='--')
+ax.axhline(y=1.0, linewidth=1, color='k', linestyle='--')
+plt.ylim([0, 1.1])
+plt.ylabel('p(i=1)')
+plt.xlabel('Impurity index')
+# plt.show()
+
+# building a decision tree
+
+from sklearn.tree import DecisionTreeClassifier
+tree_model = DecisionTreeClassifier(criterion="gini", max_depth=4, random_state=1)
+tree_model.fit(x_train, y_train)
+x_combined = np.vstack((x_train, x_test))
+y_combined = np.hstack((y_train, y_test))
+plt.figure()
+plot_decision_regions(x_combined, y_combined, classifier=tree_model, test_idx=range(105, 150))
+plt.xlabel("Petal length")
+plt.ylabel("Petal width")
+plt.legend(loc="upper left")
+plt.tight_layout()
+# plt.show()
+
+
+
+
