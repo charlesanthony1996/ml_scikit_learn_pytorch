@@ -325,5 +325,22 @@ plt.tight_layout()
 # plt.show()
 
 
+# tree model
 
+from sklearn import tree
+feature_names = ['sepal length', 'sepal width', 'petal length', 'petal width']
+tree.plot_tree(tree_model, feature_names=feature_names, filled=True)
+# plt.show()
 
+# random forest classifier
+
+from sklearn.ensemble import RandomForestClassifier
+forest = RandomForestClassifier(n_estimators=25, random_state=1, n_jobs=2)
+forest.fit(x_train, y_train)
+plt.figure()
+plot_decision_regions(x_combined, y_combined, classifier=forest, test_idx=range(105, 150))
+plt.xlabel("Petal length (cm)")
+plt.ylabel("Petal width (cm)")
+plt.legend(loc='upper left')
+plt.tight_layout()
+plt.show()
