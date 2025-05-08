@@ -108,3 +108,38 @@ c_transf = ColumnTransformer([
 # print(c_transf)
 c_transf.fit_transform(x).astype(float)
 print(c_transf.fit_transform(x).astype(float))
+
+pd.get_dummies(df[['price', 'color', 'size']])
+print(pd.get_dummies(df[['price', 'color', 'size']]))
+
+
+pd.get_dummies(df[['price', 'color', 'size']], drop_first=True)
+# blue was dropped here
+print(pd.get_dummies(df[['price', 'color', 'size']], drop_first=True))
+
+
+color_ohe = OneHotEncoder(categories='auto', drop='first')
+c_transf = ColumnTransformer([
+    ('onehot', color_ohe, [0]),
+    ('nothing', 'passthrough', [1, 2])
+])
+
+c_transf.fit_transform(x).astype(float)
+print(c_transf.fit_transform(x).astype(float))
+
+# optional: encoding ordinal features
+
+df = pd.DataFrame([['green', 'M', 10.1, 'class2'], ['red', 'L', 13.5, 'class1'], ['blue', 'XL', 15.3, 'class2']])
+df.columns = ['color', 'size', 'price', 'classlabel']
+
+print(df)
+
+df['x > M'] = df['size'].apply(lambda x: 1 if x in { 'L', 'XL'} else 0)
+
+df['x > L'] = df['size'].apply(lambda x: 1 if x == 'XL' else 0)
+
+del df['size']
+print(df)
+
+# paritioning a dataset into seperate training and test datasets
+
