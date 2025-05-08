@@ -146,6 +146,26 @@ print(df)
 df_wine = pd.read_csv('https://archive.ics.uci.edu/ml/machine-learning-databases/wine/wine.data', header=None)
 # print(df_wine.head())
 
-df.wine_columns = ['Class label', 'Alcohol', 'Malic acid', 'Ash', 'Alcalinity of ash', 'Magnesium', 'Total phenols',
-                    'Flavanoids', 'Non flavanoid pehnols', 'Proanthocyanins', 'Color intensity', 'Hue',
+df_wine.columns = ['Class label', 'Alcohol', 'Malic acid', 'Ash', 'Alcalinity of ash', 'Magnesium', 'Total phenols',
+                    'Flavanoids', 'Non flavanoid phenols', 'Proanthocyanins', 'Color intensity', 'Hue',
                     'OD280/OD315 of diluted wines', 'Proline']
+
+print('class labels', np.unique(df_wine['Class label']))
+
+print(df_wine.head())
+
+from sklearn.model_selection import train_test_split
+
+x, y = df_wine.iloc[:, 1].values, df_wine.iloc[:, 0].values
+x_train , x_test, y_train , y_test = train_test_split(x, y, test_size=0.3, stratify=y)
+
+# min max scaling procedure
+
+from sklearn.preprocessing import MinMaxScaler
+
+mms = MinMaxScaler()
+x_train_norm = mms.fit_transform(x_train)
+x_test_norm = mms.fit_transform(x_test)
+
+# example
+
