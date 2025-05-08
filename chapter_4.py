@@ -143,3 +143,9 @@ print(df)
 
 # paritioning a dataset into seperate training and test datasets
 
+df_wine = pd.read_csv('https://archive.ics.uci.edu/ml/machine-learning-databases/wine/wine.data', header=None)
+# print(df_wine.head())
+
+df.wine_columns = ['Class label', 'Alcohol', 'Malic acid', 'Ash', 'Alcalinity of ash', 'Magnesium', 'Total phenols',
+                    'Flavanoids', 'Non flavanoid pehnols', 'Proanthocyanins', 'Color intensity', 'Hue',
+                    'OD280/OD315 of diluted wines', 'Proline']
