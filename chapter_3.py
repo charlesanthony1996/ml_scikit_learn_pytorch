@@ -343,4 +343,17 @@ plt.xlabel("Petal length (cm)")
 plt.ylabel("Petal width (cm)")
 plt.legend(loc='upper left')
 plt.tight_layout()
-plt.show()
+# plt.show()
+
+# euclidean distance metric
+
+from sklearn.neighbors import KNeighborsClassifier
+knn = KNeighborsClassifier(n_neighbors=5, p = 2, metric='minkowski')
+knn.fit(x_train_std, y_train)
+plt.figure()
+plot_decision_regions(x_combined_std, y_combined, classifier=knn, test_idx=range(105, 150))
+plt.xlabel('Petal length [standardized]')
+plt.ylabel('petal width [standardized]')
+plt.tight_layout()
+# plt.show()
+
