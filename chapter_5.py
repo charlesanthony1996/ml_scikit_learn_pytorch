@@ -57,3 +57,69 @@ x_train_pca = x_train_std.dot(w)
 
 colors = ['r', 'b', 'g']
 markers = ['o', 's', '^']
+plt.figure()
+for l, c, m in zip(np.unique(y_train), colors, markers):
+    plt.scatter(x_train_pca[y_train == l, 0], x_train_pca[y_train == l, 1], c=c, label=f"Class {l}", marker=m)
+plt.xlabel("PC 1")
+plt.ylabel("PC 2")
+plt.legend(loc='lower left')
+plt.tight_layout()
+# plt.show()
+
+
+# principal component analysis in scikit learn
+
+from matplotlib.colors import ListedColormap
+def plot_decision_regions(x, y, classifier, test_idx=None, resolution=0.02):
+    markers = ('o', 's', '^', 'v', '<')
+    colors = ('red', 'blue', 'lightgreen', 'gray', 'cyan')
+
+    cmap = ListedColormap(colors[:len(np.unique(y))])
+
+    # plot the decision surface
+    x1_min, x1_max = x[:, 0].min() - 1, x[:, 0].max() + 1
+    x2_min, x2_max = x[:, 1].min() - 1, x[:, 1].max() + 1
+
+    xx1, xx2 = np.meshgrid(np.arange(x1_min, x1_max, resolution), np.arange(x2_min, x2_max, resolution))
+    lab = classifier.predict(np.array([xx1.ravel(), xx2.ravel()]).T)
+    lab = lab.reshape(xx1.shape)
+    plt.contourf(xx1, xx2, lab, alpha=0.3, cmap=cmap)
+    plt.ylim(xx1.min(), xx1.max())
+    plt.xlim(xx2.min(), xx2.max())
+
+    # plot class examples
+    # plt.figure()
+    for idx, cl in enumerate(np.unique(y)):
+        plt.scatter(x= x[y == cl, 0], y= x[y == cl, 1], alpha=0.8, c= colors[idx], marker=markers[idx], 
+                    label=f"Class {cl}", edgecolor='black')
+    # plt.show()
+
+plt.figure()
+from sklearn.linear_model import LogisticRegression
+from sklearn.decomposition import PCA
+
+
+pca = PCA(n_components= 2)
+lr = LogisticRegression(multi_class='ovr', random_state= 1, solver='lbfgs')
+x_train_pca = pca.fit_transform(x_train_std)
+x_test_pca = pca.transform(x_test_std)
+
+lr.fit(x_train_pca, y_train)
+plot_decision_regions(x_train_pca, y_train, classifier=lr)
+
+plt.xlabel('pc 1')
+plt.ylabel('pc 2')
+
+plt.legend(loc='lower left')
+plt.tight_layout()
+# plt.show()
+
+plt.figure()
+plot_decision_regions(x_test_pca, y_test, classifier=lr)
+plt.xlabel('pc 1')
+plt.ylabel('pc 2')
+plt.legend(loc='upper left')
+plt.tight_layout()
+# plt.show()
+
+
