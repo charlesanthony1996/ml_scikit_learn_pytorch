@@ -253,11 +253,13 @@ class SBS:
             subsets = []
 
             for p in combinations(self.indices_, r= dim - 1):
-                score = self._calc_score(x_train, y_train, score.append(score), subsets.append(p))
-                best = np.argmax(scores)
-                self.indices_ = subsets[best]
-                self.subsets_.append(self.indices_)
-                dim -= 1
+                score = self._calc_score(x_train, y_train, x_test, y_test, p)
+                scores.append(score)
+                subsets.append(p)
+            best = np.argmax(scores)
+            self.indices_ = subsets[best]
+            self.subsets_.append(self.indices_)
+            dim -= 1
 
             self.scores_.append(scores[best])
         
@@ -276,4 +278,57 @@ class SBS:
         return score
 
 
+
+import matplotlib.pyplot as plt
+from sklearn.neighbors import KNeighborsClassifier
+
+knn = KNeighborsClassifier(n_neighbors=5)
+sbs = SBS(knn, k_features = 1)
+sbs.fit(x_train_std, y_train)
+
+
+# plotting classification accuracy
+
+k_feat = [len(k) for k in sbs.subsets_]
+plt.figure()
+plt.plot(k_feat, sbs.scores_, marker='o')
+plt.ylim([0.7, 1.02])
+plt.ylabel("Accuracy")
+plt.xlabel("Number of features")
+plt.grid()
+plt.tight_layout()
+# plt.show()
+
+
+# smallest feature k = 3
+k3 = list(sbs.subsets_[10])
+print(df_wine.columns[1:][k3])
+
+knn.fit(x_train_std, y_train)
+print("Training accuracy: ", knn.score(x_train_std, y_train))
+print("Testing accuracy: ", knn.score(x_test_std, y_test))
+
+knn.fit(x_train_std[:, k3], y_train)
+print("Training accuracy: ", knn.score(x_train_std[:, k3],y_train))
+print("Testing accuracy: ", knn.score(x_test_std[:, k3], y_test))
+
+# assessing feature importance with random forests
+
+from sklearn.ensemble import RandomForestClassifier
+feat_labels = df_wine.columns[1:]
+forest = RandomForestClassifier(n_estimators=500, random_state=1)
+
+forest.fit(x_train, y_train)
+importances = forest.feature_importances_
+indices = np.argsort(importances)[::-1]
+for f in range(x_train.shape[1]):
+    print("%2d) %-*s %f" % (f + 1, 30, feat_labels[indices[f]], importances[indices[f]]))
+
+plt.title("Feature importance")
+plt.bar(range(x_train.shape[1]), importances[indices], align='center')
+
+plt.xticks(range(x_train.shape[1]), feat_labels[indices], rotation=90)
+plt.xlim([-1, x_train.shape[1]])
+plt.tight_layout()
+# plt.show()
 
