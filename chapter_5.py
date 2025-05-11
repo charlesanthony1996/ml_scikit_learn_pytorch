@@ -123,3 +123,55 @@ plt.tight_layout()
 # plt.show()
 
 
+pca = PCA(n_components=None)
+x_train_pca = pca.fit_transform(x_train_std)
+pca.explained_variance_ratio_
+
+# assessing feature contributions
+
+loadings = eigen_vecs * np.sqrt(eigen_vals)
+
+fig, ax = plt.subplots()
+ax.bar(range(13), loadings[:, 0], align='center')
+ax.set_ylabel('loadings for pc 1')
+ax.set_xticklabels(df_wine.columns[1:], rotation=90)
+plt.figure()
+plt.ylim([-1, 1])
+plt.tight_layout()
+# plt.show()
+
+
+# computing the scatter matrices
+
+np.set_printoptions(precision= 1)
+mean_vecs = []
+for label in range(1, 4):
+    mean_vecs.append(np.mean(x_train_std[y_train == label,], axis=0))
+    print(f"MV {label}: {mean_vecs[label - 1]}\n")
+
+
+d = 13
+s_w = np.zeros((d, d))
+for label, mv in zip(range(1, 4), mean_vecs):
+    class_scatter = np.zeros((d, d))
+    for row in x_train_std[y_train == label]:
+        row, mv = row.reshape(d, 1), mv.reshape(d, 1)
+        class_scatter += (row - mv).dot((row  - mv).T)
+    s_w += class_scatter
+
+print("Within class scatter matrix: ", f"{s_w.shape[0]} x {s_w.shape[1]}")
+
+
+print("Class label distribution: ", np.bincount(y_train)[1:])
+
+# code for computing the scaled within class scatter matrix
+
+d = 13
+s_w = np.zeros((d, d))
+for label, mv in zip(range(1, 4), mean_vecs):
+    class_scatter = np.cov(x_train_std[y_train == label].T)
+    s_w += class_scatter
+
+print("Scaled within class scatter matrix: ", f"{s_w.shape[0]}x{s_w.shape[1]}")
+
+
