@@ -175,3 +175,42 @@ for label, mv in zip(range(1, 4), mean_vecs):
 print("Scaled within class scatter matrix: ", f"{s_w.shape[0]}x{s_w.shape[1]}")
 
 
+# m -> overall mean
+
+mean_overall = np.mean(x_train_std, axis=0)
+mean_overall = mean_overall.reshape(d, 1)
+
+d = 13
+s_b = np.zeros((d, d))
+for i, mean_vec in enumerate(mean_vecs):
+    n = x_train_std[y_train == i + 1, :].shape[0]
+    mean_vec = mean_vec.reshape(d, 1)
+    s_b += n * (mean_vec - mean_overall).dot((mean_vec - mean_overall).T)
+
+print("Between class scatter matrix")
+
+# selecting linear discriminants for the new feature subspace
+
+eigen_vals, eigen_vecs = np.linalg.eig(np.linalg.inv(s_w).dot(s_b))
+
+eigen_pairs = [(np.abs(eigen_vals[i]), eigen_vecs[:, i]) for i in range(len(eigen_vecs))]
+
+eigen_pairs = sorted(eigen_pairs, key=lambda k: k[0], reverse=True)
+print("eigenvalues in descending order")
+
+for eigen_val in eigen_pairs:
+    print(eigen_val[0])
+
+tot = sum(eigen_vals.real)
+discr = [(i / tot) for i in sorted(eigen_vals.real, reverse=True)]
+cum_discr = np.cumsum(discr)
+plt.figure()
+plt.bar(range(1, 14), discr, align='center', label='individual discriminality')
+plt.step(range(1, 14), cum_discr, where='mid', label='cumulative discriminality')
+plt.ylabel("discriminality ratio")
+plt.xlabel("Linear discriminants")
+plt.ylim([-0.1, 1.1])
+plt.legend(loc='best')
+plt.tight_layout()
+# plt.show()
+
