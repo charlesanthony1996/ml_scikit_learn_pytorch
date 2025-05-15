@@ -35,8 +35,21 @@ print(f"Test Accuracy: {test_acc:.3f}")
 # stratified k fold validation
 
 import numpy as np
-from sklearn.model_selection import StratifiedGroupKFold
+from sklearn.model_selection import StratifiedKFold
+kfold = StratifiedKFold(n_splits=10).split(x_train, y_train)
+scores = []
+for k, (train, test) in enumerate(kfold):
+    pipe_lr.fit(x_train[train], y_train[train])
+    score = pipe_lr.score(x_train[test], y_train[test])
+    scores.append(score)
+    print(f"k fold: {k+1:02d}, ", f"Class distr.: {np.bincount(y_train[train])}, ", f"Acc.: {score:.3f}")
+    
+mean_acc = np.mean(scores)
+std_acc = np.std(scores)
+print(f"\nCV accuracy: {mean_acc:.3f} +/- {std_acc:.3f}")
 
+from sklearn.model_selection import cross_val_score
+scores = cross_val_score(estimator = pipe_lr, X= x_train, y=y_train, cv= 10, n_jobs= 1)
+print("Accuracy scores: {scores}")
 
-
-
+print(f"CV accuracy: {np.mean(scores):.3f} " f"+/- {np.std(scores):.3f}")
