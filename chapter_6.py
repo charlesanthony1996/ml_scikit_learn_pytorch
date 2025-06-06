@@ -170,5 +170,79 @@ print(rs.best_params_)
 from sklearn.experimental import enable_halving_search_cv
 
 
-from sklearn.model_selection import HalvingGridSearchCV
+from sklearn.model_selection import HalvingRandomSearchCV
+
+hs = HalvingRandomSearchCV(
+    pipe_svc, 
+    param_distributions=param_grid, 
+    n_candidates='exhaust', 
+    resource='n_samples', 
+    factor=1.5, 
+    random_state=1,
+    n_jobs=1
+)
+
+hs = hs.fit(x_train, y_train)
+print(hs.best_score_)
+
+clf = hs.best_estimator_
+print(f"Test accuracy: {hs.score(x_test, y_test):.3f}")
+
+# alogrithm selection with nested cross validation
+
+param_range = [0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0]
+
+param_grid = [{'svc__C': param_range, 'svc__kernel': ['linear']}, {'svc__C': param_range, 'svc__gamma': param_range, 'svc__kernel': ['rbf']}]
+
+gs = GridSearchCV(estimator=pipe_svc, param_grid=param_grid, scoring='accuracy', cv=2)
+
+scores = cross_val_score(gs, x_train, y_train, scoring='accuracy', cv=5)
+
+print(f"cv accuracy: {np.mean(scores):.3f} "  f'+/- {np.std(scores):.3f}')
+
+
+
+from sklearn.tree import DecisionTreeClassifier
+gs = GridSearchCV(
+    estimator=DecisionTreeClassifier(random_state=0),
+    param_grid=[{'max_depth': [1, 2, 3, 4, 5, 6, 7, None]}],
+    scoring='accuracy',
+    cv=2
+)
+
+scores = cross_val_score(gs, x_train, y_train, scoring='accuracy', cv=5)
+print(f'CV accuracy: {np.mean(scores):.3f}' f'+/- {np.std(scores):.3f}')
+
+# reading a confusion matrix
+
+from sklearn.metrics import confusion_matrix
+pipe_svc.fit(x_train, y_train)
+y_pred = pipe_svc.predict(x_test)
+confmat = confusion_matrix(y_true=y_test, y_pred=y_pred)
+print(confmat)
+
+
+fig, ax = plt.subplots(figsize=(2.5, 2.5))
+ax.matshow(confmat, cmap=plt.cm.Blues, alpha=0.3)
+for i in range(confmat.shape[0]):
+    for j in range(confmat.shape[1]):
+        ax.text(x= j, y=i, s=confmat[i, j], va='center', ha='center')
+
+ax.xaxis.set_ticks_position('bottom')
+plt.xlabel('Predicted label')
+plt.ylabel('True label')
+# plt.show()
+
+from sklearn.metrics import precision_score
+from sklearn.metrics import recall_score, f1_score
+from sklearn.metrics import matthews_corrcoef
+
+pre_val = precision_score(y_true=y_test, y_pred=y_pred)
+print(f'Precision: {pre_val:.3f}')
+
+rec_val = precision_score(y_true=y_test, y_pred=y_pred)
+print(f'Recall: {rec_val:.3f}')
+
+f1_val = precision_score(y_true=y_test, y_pred=y_pred)
+print(f"F1 val: {f1_val:.3f}")
 
