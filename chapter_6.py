@@ -246,3 +246,36 @@ print(f'Recall: {rec_val:.3f}')
 f1_val = precision_score(y_true=y_test, y_pred=y_pred)
 print(f"F1 val: {f1_val:.3f}")
 
+mcc_val = precision_score(y_true=y_test, y_pred=y_pred)
+print(f"MCC val: {mcc_val:.3f}")
+
+from sklearn.metrics import make_scorer
+c_gamma_range = [0.01, 0.1, 1.0, 10.0]
+
+param_grid = [{'svc__C': c_gamma_range,
+               'svc__kernel': ['linear']},
+               {'svc__C': c_gamma_range,
+                'svc__gamma': c_gamma_range,
+                'svc__kernel': ['rbf']}]
+
+scorer = make_scorer(f1_score, pos_label=0)
+gs = GridSearchCV(estimator=pipe_svc, param_grid=param_grid, scoring=scorer, cv=10)
+gs = gs.fit(x_train, y_train)
+print(gs.best_score_)
+print(gs.best_params_)
+
+
+
+# plotting a receiver operating characteristic
+
+from sklearn.metrics import roc_curve, auc
+
+from numpy import interp
+pipe_lr = make_pipeline(
+    StandardScaler(),
+    PCA(n_components=2),
+    LogisticRegression(penalty='l2', random_state=1, solver='lbfgs', C= 100.0)
+)
+
+x_train2 = x_train[:, [4, 14]]
+print(x_train2)
