@@ -278,4 +278,48 @@ pipe_lr = make_pipeline(
 )
 
 x_train2 = x_train[:, [4, 14]]
-print(x_train2)
+# print(x_train2)
+
+cv = list(StratifiedKFold(n_splits=3).split(x_train, y_train))
+fig = plt.figure(figsize=(7, 5))
+mean_tpr = 0.0
+mean_fpr = np.linspace(0, 1, 1000)
+all_tpr = []
+for i, (train, test) in enumerate(cv):
+    probas = pipe_lr.fit(
+        x_train2[train],
+        y_train[train]
+    ).predict_proba(x_train2[test])
+    fpr, tpr, thresholds = roc_curve(y_train[test], probas[:, 1], pos_label=1)
+    mean_tpr += interp(mean_fpr, fpr, tpr)
+    mean_tpr[0] = 0.0
+    roc_auc = auc(fpr, tpr)
+    plt.plot(fpr, tpr, label=f'ROC fold {i+1} (area= {roc_auc:.2f})')
+plt.plot([0, 1], [0, 1], linestyle='--', color=(0.6, 0.6, 0.6), label='Random guessing {}')
+
+mean_tpr /= len(cv)
+mean_tpr[-1] = 1.0
+mean_auc = auc(mean_fpr, mean_tpr)
+plt.plot(mean_fpr, mean_tpr, 'k--', label=f'Mean ROC (area = {mean_auc:.2f})', lw=2)
+
+plt.plot([0, 0, 1], [0, 1, 1], linestyle=':', color='black', label='Perfect performance (area=1.0)')
+
+plt.xlim([-0.05, 1.05])
+plt.ylim([-0.05, 1.05])
+
+plt.xlabel('False positive rate')
+plt.ylabel('True positive rate')
+plt.legend(loc='lower right')
+# plt.show()
+
+
+pre_scorer = make_scorer(score_func=precision_score, pos_label=1, greater_is_better=True, average='micro')
+
+
+# dealing with class imbalance
+x_imb = np.vstack((x[y == 0], x[y == 1][:40]))
+y_imb = np.hstack((y[y == 0], y[y == 1][:40]))
+
+y_pred = np.zeros(y_imb.shape[0])
+np.mean(y_pred == y_imb) * 100
+
