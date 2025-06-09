@@ -41,4 +41,15 @@ p = np.average(ex, axis=0, weights=[0.2, 0.2, 0.6])
 print(p)
 
 np.argmax(p)
-print(np.argmax(p))
+# print(np.argmax(p))
+
+# putting everything together now
+
+from sklearn.base import BaseEstimator
+from sklearn.base import ClassifierMixin
+from sklearn.preprocessing import LabelEncoder
+from sklearn.base import clone
+from sklearn.pipeline import _name_estimators
+import numpy as np
+import operator
+
