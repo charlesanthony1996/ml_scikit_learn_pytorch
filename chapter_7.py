@@ -157,3 +157,10 @@ for clf, label in zip([pipe1, clf2, pipe3], clf_labels):
     scores = cross_val_score(estimator=clf, X= x_train, y=y_train, cv=10, scoring='roc_auc')
     print(f'ROC AUC: {scores.mean():.2f}' f'(+/- {scores.std():.2f}) [{label}]')
 
+mv_clf = majorityvoterclassifier(classifiers=[pipe1, clf2, pipe3])
+
+clf_labels += ['Majority voting']
+all_clf = [pipe1, clf2, pipe3, mv_clf]
+for clf, label in zip(all_clf, clf_labels):
+    scores = cross_val_score(estimator=clf, X=x_train, y=y_train, cv= 10, scoring='roc_auc')
+    print(f'roc auc')
