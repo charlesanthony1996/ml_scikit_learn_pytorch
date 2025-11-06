@@ -98,7 +98,7 @@ class majorityvoterclassifier(BaseEstimator, ClassifierMixin):
         return maj_vote
     
     def predict_proba(self, x):
-        probas = np.asarray([clf.predict_proba(x) for clf in self.classfiers_])
+        probas = np.asarray([clf.predict_proba(x) for clf in self.classifiers_])
         avg_proba = np.average(probas, axis=0, weights=self.weights)
         return avg_proba
     
@@ -163,4 +163,30 @@ clf_labels += ['Majority voting']
 all_clf = [pipe1, clf2, pipe3, mv_clf]
 for clf, label in zip(all_clf, clf_labels):
     scores = cross_val_score(estimator=clf, X=x_train, y=y_train, cv= 10, scoring='roc_auc')
-    print(f'roc auc')
+    print(f'roc auc:, {scores.mean():.2f} ', f'(+/- {scores.std():.2f}) [{label}]')
+
+
+# evaluate and tuning the ensemble classifier
+
+from sklearn.metrics import roc_curve
+from sklearn.metrics import auc
+
+colors = ['black', 'orange', 'blue', 'green']
+linestyles = [':', '--', '-.', '-']
+
+for clf, label, clr, ls in zip(all_clf, clf_labels, colors, linestyles):
+    # assuming the label of the positive class is 1
+    y_pred = clf.fit(x_train, y_train).predict_proba(x_test)[:, 1]
+    fpr, tpr, thresholds = roc_curve(y_true = y_test, y_score=y_pred)
+    
+    roc_auc = auc(x= fpr, y= tpr)
+    plt.plot(fpr, tpr, color=clr, linestyle=ls, label=f'{label} (auc= {roc_auc:.2f})')
+
+plt.legend(loc='lower right')
+plt.plot([0, 1], [0, 1], linestyle='--', color='gray', linewidth=2)
+plt.xlim([-0.1, 1.1])
+plt.ylim([-0.1, 1.1])
+plt.grid(alpha=0.5)
+plt.xlabel('False positive rate (FPR)')
+plt.ylabel('True positive rate (TPR)')
+# plt.show()
